@@ -46,7 +46,7 @@ const features = [
 
 const FeelSafer = () => {
   return (
-    <section className="relative overflow-hidden bg-[#f8fafc] py-16 sm:py-20 lg:py-28">
+    <section className="relative overflow-hidden bg-[#f8fafc] py-8 sm:py-7 lg:py-10">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/4 top-10 h-40 w-40 rounded-full bg-violet-200/20 blur-3xl sm:h-56 sm:w-56" />
         <div className="absolute right-1/4 bottom-10 h-40 w-40 rounded-full bg-blue-200/20 blur-3xl sm:h-56 sm:w-56" />
