@@ -21,7 +21,7 @@ import RegisterPage from '../pages/RegisterPage';
 import ReportsPage from '../pages/ReportsPage';
 
 /* Auth */
-import ForgotPassword from '../components/login/login_components/ForgotPassword';
+import ForgotPassword from '../pages/ForgotPasswordPage';
 
 /* Dashboard Pages */
 import CommunityPosts from '../components/dashboard/dashboard_componenta/CommunityPosts';
