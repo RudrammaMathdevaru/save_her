@@ -1,6 +1,37 @@
+/**
+ * File: src/pages/LoginPage.jsx
+ * Updated: 2026-03-17
+ *
+ * Purpose:
+ * - Enterprise-grade login screen with comprehensive validation
+ * - Rate limiting simulation (5 attempts → 30s lockout)
+ * - Remember me functionality
+ * - Accessibility focused
+ *
+ * Changes:
+ * - Added AuthHeader component for consistent auth pages
+ * - Added padding-top (80px) to account for fixed header
+ * - Preserved ALL existing functionality and UI exactly as before
+ *
+ * Connected Modules:
+ * - AuthHeader.jsx (for consistent auth page header)
+ * - App.jsx (route configuration)
+ *
+ * Dependencies:
+ * - react-icons/fi (for icons)
+ * - react-router-dom (for navigation)
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FiAlertCircle, FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi';
+import {
+  FiAlertCircle,
+  FiEye,
+  FiEyeOff,
+  FiLock,
+  FiMail,
+} from 'react-icons/fi';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import AuthHeader from '../components/Layout/AuthHeader';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -283,220 +314,232 @@ const LoginPage = () => {
   }, [lockoutTime]);
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8 sm:px-6 lg:px-8 mt-12">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
-      </div>
+    <>
+      <AuthHeader />
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
-              Welcome Back
-            </h1>
-            <p className="mt-3 text-base text-slate-600">
-              Sign in to continue to SafeHer
-            </p>
-          </div>
+      <section
+        className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8 sm:px-6 lg:px-8"
+        style={{ paddingTop: '80px' }} // 64px header + 16px extra spacing
+      >
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
+        </div>
 
-          {/* Main Card */}
-          <div className="relative overflow-hidden rounded-2xl bg-white/90 p-6 shadow-xl backdrop-blur-xl sm:p-8">
-            {/* Loading Overlay */}
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm z-10">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-                  <p className="text-sm font-medium text-indigo-600">
-                    Signing in...
-                  </p>
+        <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                Welcome Back
+              </h1>
+              <p className="mt-3 text-base text-slate-600">
+                Sign in to continue to SafeHer
+              </p>
+            </div>
+
+            {/* Main Card */}
+            <div className="relative overflow-hidden rounded-2xl bg-white/90 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+              {/* Loading Overlay */}
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm z-10">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+                    <p className="text-sm font-medium text-indigo-600">
+                      Signing in...
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Error Alert */}
-            {submitError && (
-              <div
-                className="mb-6 flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-                role="alert"
-                aria-live="polite"
-              >
-                <FiAlertCircle className="h-5 w-5 flex-shrink-0" />
-                <p>{submitError}</p>
-              </div>
-            )}
-
-            {/* Lockout Warning */}
-            {isLocked && (
-              <div
-                className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
-                role="alert"
-                aria-live="polite"
-              >
-                <FiAlertCircle className="h-5 w-5 flex-shrink-0" />
-                <p>
-                  Account locked. Try again in {getLockoutTimeRemaining()}{' '}
-                  seconds.
-                </p>
-              </div>
-            )}
-
-            <form
-              className="space-y-5"
-              onSubmit={handleSubmit}
-              noValidate
-              aria-label="Login form"
-            >
-              {/* Email Field */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-slate-700"
+              {/* Error Alert */}
+              {submitError && (
+                <div
+                  className="mb-6 flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                  role="alert"
+                  aria-live="polite"
                 >
-                  Email Address
-                  <span className="ml-1 text-red-500" aria-hidden="true">
-                    *
-                  </span>
-                  <span className="sr-only">(required)</span>
-                </label>
-
-                <div className={inputWrapperClass('email')}>
-                  <FiMail
-                    className="h-5 w-5 text-slate-400"
-                    aria-hidden="true"
-                  />
-                  <input
-                    ref={emailInputRef}
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="you@example.com"
-                    className={inputClass}
-                    disabled={isLoading || isLocked}
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    autoComplete="email"
-                    inputMode="email"
-                  />
+                  <FiAlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>{submitError}</p>
                 </div>
+              )}
 
-                {errors.email && (
-                  <p
-                    id="email-error"
-                    className="mt-1.5 text-sm text-red-500 flex items-center gap-1"
-                    role="alert"
-                  >
-                    <FiAlertCircle className="h-4 w-4" aria-hidden="true" />
-                    {errors.email}
-                  </p>
-                )}
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-slate-700"
+              {/* Lockout Warning */}
+              {isLocked && (
+                <div
+                  className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
+                  role="alert"
+                  aria-live="polite"
                 >
-                  Password
-                  <span className="ml-1 text-red-500" aria-hidden="true">
-                    *
-                  </span>
-                  <span className="sr-only">(required)</span>
-                </label>
+                  <FiAlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>
+                    Account locked. Try again in {getLockoutTimeRemaining()}{' '}
+                    seconds.
+                  </p>
+                </div>
+              )}
 
-                <div className={inputWrapperClass('password')}>
-                  <FiLock
-                    className="h-5 w-5 text-slate-400"
-                    aria-hidden="true"
-                  />
-
-                  <input
-                    ref={passwordInputRef}
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="••••••••"
-                    className={inputClass}
-                    disabled={isLoading || isLocked}
-                    aria-invalid={!!errors.password}
-                    aria-describedby={
-                      errors.password ? 'password-error' : undefined
-                    }
-                    autoComplete="current-password"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="text-slate-400 transition-colors hover:text-indigo-600 focus:outline-none focus:text-indigo-600 disabled:cursor-not-allowed"
-                    aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
-                    }
-                    disabled={isLoading || isLocked}
+              <form
+                className="space-y-5"
+                onSubmit={handleSubmit}
+                noValidate
+                aria-label="Login form"
+              >
+                {/* Email Field */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-medium text-slate-700"
                   >
-                    {showPassword ? (
-                      <FiEyeOff className="h-5 w-5" aria-hidden="true" />
-                    ) : (
-                      <FiEye className="h-5 w-5" aria-hidden="true" />
-                    )}
-                  </button>
+                    Email Address
+                    <span className="ml-1 text-red-500" aria-hidden="true">
+                      *
+                    </span>
+                    <span className="sr-only">(required)</span>
+                  </label>
+
+                  <div className={inputWrapperClass('email')}>
+                    <FiMail
+                      className="h-5 w-5 text-slate-400"
+                      aria-hidden="true"
+                    />
+                    <input
+                      ref={emailInputRef}
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="you@example.com"
+                      className={inputClass}
+                      disabled={isLoading || isLocked}
+                      aria-invalid={!!errors.email}
+                      aria-describedby={
+                        errors.email ? 'email-error' : undefined
+                      }
+                      autoComplete="email"
+                      inputMode="email"
+                    />
+                  </div>
+
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      className="mt-1.5 text-sm text-red-500 flex items-center gap-1"
+                      role="alert"
+                    >
+                      <FiAlertCircle className="h-4 w-4" aria-hidden="true" />
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
 
-                {errors.password && (
-                  <p
-                    id="password-error"
-                    className="mt-1.5 text-sm text-red-500 flex items-center gap-1"
-                    role="alert"
+                {/* Password Field */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-2 block text-sm font-medium text-slate-700"
                   >
-                    <FiAlertCircle className="h-4 w-4" aria-hidden="true" />
-                    {errors.password}
-                  </p>
-                )}
-              </div>
+                    Password
+                    <span className="ml-1 text-red-500" aria-hidden="true">
+                      *
+                    </span>
+                    <span className="sr-only">(required)</span>
+                  </label>
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between gap-3">
-                <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={handleRememberMeChange}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                    disabled={isLoading || isLocked}
-                    aria-label="Remember me on this device"
-                  />
-                  <span>Remember me</span>
-                </label>
+                  <div className={inputWrapperClass('password')}>
+                    <FiLock
+                      className="h-5 w-5 text-slate-400"
+                      aria-hidden="true"
+                    />
 
-                <NavLink
-                  to="/forgot-password"
-                  className={`
+                    <input
+                      ref={passwordInputRef}
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="••••••••"
+                      className={inputClass}
+                      disabled={isLoading || isLocked}
+                      aria-invalid={!!errors.password}
+                      aria-describedby={
+                        errors.password ? 'password-error' : undefined
+                      }
+                      autoComplete="current-password"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="text-slate-400 transition-colors hover:text-indigo-600 focus:outline-none focus:text-indigo-600 disabled:cursor-not-allowed"
+                      aria-label={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                      disabled={isLoading || isLocked}
+                    >
+                      {showPassword ? (
+                        <FiEyeOff className="h-5 w-5" aria-hidden="true" />
+                      ) : (
+                        <FiEye className="h-5 w-5" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+
+                  {errors.password && (
+                    <p
+                      id="password-error"
+                      className="mt-1.5 text-sm text-red-500 flex items-center gap-1"
+                      role="alert"
+                    >
+                      <FiAlertCircle className="h-4 w-4" aria-hidden="true" />
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={handleRememberMeChange}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      disabled={isLoading || isLocked}
+                      aria-label="Remember me on this device"
+                    />
+                    <span>Remember me</span>
+                  </label>
+
+                  <NavLink
+                    to="/forgot-password"
+                    className={`
                     text-sm font-medium text-indigo-600 
                     hover:text-indigo-700 focus:outline-none focus:ring-2 
                     focus:ring-indigo-500 focus:ring-offset-2 rounded
-                    ${isLoading || isLocked ? 'pointer-events-none opacity-50' : ''}
+                    ${
+                      isLoading || isLocked
+                        ? 'pointer-events-none opacity-50'
+                        : ''
+                    }
                   `}
-                  tabIndex={isLoading || isLocked ? -1 : 0}
-                >
-                  Forgot password?
-                </NavLink>
-              </div>
+                    tabIndex={isLoading || isLocked ? -1 : 0}
+                  >
+                    Forgot password?
+                  </NavLink>
+                </div>
 
-              {/* Submit Button */}
-              <button
-                ref={submitButtonRef}
-                type="submit"
-                disabled={isLoading || isLocked}
-                className={`
+                {/* Submit Button */}
+                <button
+                  ref={submitButtonRef}
+                  type="submit"
+                  disabled={isLoading || isLocked}
+                  className={`
                   w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600
                   px-6 py-3.5 text-sm font-semibold text-white
                   shadow-lg shadow-indigo-500/30
@@ -506,60 +549,63 @@ const LoginPage = () => {
                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                   disabled:hover:shadow-lg
                 `}
-                aria-label="Sign in to your account"
-              >
-                {isLoading ? 'Signing in...' : 'Sign In'}
-              </button>
-            </form>
+                  aria-label="Sign in to your account"
+                >
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
 
-            {/* Register Link */}
-            <p className="mt-6 text-center text-sm text-slate-500">
-              Don't have an account?{' '}
-              <NavLink
-                to="/register"
-                className={`
+              {/* Register Link */}
+              <p className="mt-6 text-center text-sm text-slate-500">
+                Don't have an account?{' '}
+                <NavLink
+                  to="/register"
+                  className={`
                   font-semibold text-indigo-600 
                   hover:text-indigo-700 focus:outline-none focus:ring-2 
                   focus:ring-indigo-500 focus:ring-offset-2 rounded
-                  ${isLoading || isLocked ? 'pointer-events-none opacity-50' : ''}
+                  ${
+                    isLoading || isLocked ? 'pointer-events-none opacity-50' : ''
+                  }
                 `}
-                tabIndex={isLoading || isLocked ? -1 : 0}
-              >
-                Create account
-              </NavLink>
+                  tabIndex={isLoading || isLocked ? -1 : 0}
+                >
+                  Create account
+                </NavLink>
+              </p>
+            </div>
+
+            {/* Security Badge */}
+            <p className="mt-4 text-center text-xs text-slate-500">
+              Secured by enterprise-grade encryption
             </p>
           </div>
-
-          {/* Security Badge */}
-          <p className="mt-4 text-center text-xs text-slate-500">
-            Secured by enterprise-grade encryption
-          </p>
         </div>
-      </div>
 
-      <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
+        <style jsx>{`
+          @keyframes blob {
+            0% {
+              transform: translate(0px, 0px) scale(1);
+            }
+            33% {
+              transform: translate(30px, -50px) scale(1.1);
+            }
+            66% {
+              transform: translate(-20px, 20px) scale(0.9);
+            }
+            100% {
+              transform: translate(0px, 0px) scale(1);
+            }
           }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
+          .animate-blob {
+            animation: blob 7s infinite;
           }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
+          .animation-delay-2000 {
+            animation-delay: 2s;
           }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
-    </section>
+        `}</style>
+      </section>
+    </>
   );
 };
 

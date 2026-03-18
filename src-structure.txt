@@ -1,79 +1,128 @@
-Folder PATH listing for volume Windows-SSD
-Volume serial number is 000001F5 285A:EEB3
-C:\USERS\RUCHI\ONEDRIVE\DESKTOP\SAVE-HER\SAVE-HER\SRC
-|   App.css
-|   App.jsx
-|   index.css
-|   main.jsx
-|   
-+---api
-+---assets
-|   |   react.svg
-|   |   
-|   \---images
-|           backgrond1.jpg
-|           community.png
-|           logo.png
-|           safety imge.png
-|           sos.png
-|           
-+---components
-|   +---dashboard
-|   |   |   Dashboard.jsx
-|   |   |   
-|   |   \---dashboard_componenta
-|   |           ChangePasswordModal.jsx
-|   |           CommunityPosts.jsx
-|   |           EmergencyContacts.jsx
-|   |           Profile.jsx
-|   |           SafeherDashboard.jsx
-|   |           SOS.jsx
-|   |           SOSHistory.jsx
-|   |           
-|   +---home
-|   |   |   Home.jsx
-|   |   |   
-|   |   \---home_components
-|   |           FeelSafer.jsx
-|   |           HeaderBanner.jsx
-|   |           HomeCards.jsx
-|   |           ReadyTo.jsx
-|   |           RecentReports.jsx
-|   |           
-|   +---Layout
-|   |       Footer.jsx
-|   |       Navbar.jsx
-|   |       
-|   +---login
-|   |   |   Login.jsx
-|   |   |   
-|   |   \---login_components
-|   |           ForgotPassword.jsx
-|   |           WelcomLogin.jsx
-|   |           
-|   +---regester
-|   |   |   Regester.jsx
-|   |   |   
-|   |   \---regester_components
-|   |           CreateRegister.jsx
-|   |           
-|   \---reports
-|       |   Reports.jsx
-|       |   
-|       \---reports_components
-|               PublicReports.jsx
-|               
-+---context
-+---hook
-+---pages
-|       HomePage.jsx
-|       LoginPage.jsx
-|       RegesterPage.jsx
-|       ReportsPage.jsx
-|       
-+---Routes
-|       AppRoutes.jsx
-|       ProtectedRoutes.jsx
-|       
-+---services
-\---utils
+.
+├── dist
+│   ├── assets
+│   │   ├── backgrond1-CVK6v62L.jpg
+│   │   ├── index-C6_b_Hdv.css
+│   │   ├── index-DxJvReiq.js
+│   │   ├── logo-3d7aB8j9.png
+│   │   ├── safety imge-Div3JR75.png
+│   │   └── sos-Dnw5ucPv.png
+│   ├── index.html
+│   └── vite.svg
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── public
+│   ├── save har.jpg
+│   └── vite.svg
+├── README.md
+├── src
+│   ├── App.css
+│   ├── App.jsx
+│   ├── assets
+│   │   ├── images
+│   │   │   ├── backgrond1.jpg
+│   │   │   ├── community.png
+│   │   │   ├── logo.png
+│   │   │   ├── safety imge.png
+│   │   │   └── sos.png
+│   │   └── react.svg
+│   ├── components
+│   │   ├── aboutWeb
+│   │   │   ├── about_web_components
+│   │   │   │   ├── AboutSection.jsx
+│   │   │   │   ├── AboutStats.jsx
+│   │   │   │   └── WhyChooseSafeHer.jsx
+│   │   │   └── AboutMain.jsx
+│   │   ├── contactweb
+│   │   │   ├── contact_web_components
+│   │   │   └── ContactMain.jsx
+│   │   ├── dashboard
+│   │   ├── home
+│   │   │   ├── home_components
+│   │   │   │   ├── FeelSafer.jsx
+│   │   │   │   ├── HeaderBanner.jsx
+│   │   │   │   ├── HomeCards.jsx
+│   │   │   │   ├── ReadyTo.jsx
+│   │   │   │   └── RecentReports.jsx
+│   │   │   └── Home.jsx
+│   │   ├── Layout
+│   │   │   ├── AuthHeader.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   └── Navbar.jsx
+│   │   ├── reports
+│   │   │   ├── reports_components
+│   │   │   │   └── PublicReports.jsx
+│   │   │   └── Reports.jsx
+│   │   └── serviseWeb
+│   │       ├── ServiceMain.jsx
+│   │       └── sevice_web_components
+│   ├── index.css
+│   ├── main.jsx
+│   ├── pages
+│   │   ├── ForgotPasswordPage.jsx
+│   │   ├── HomePage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── RegisterPage.jsx
+│   │   └── ReportsPage.jsx
+│   ├── Routes
+│   │   ├── AppRoutes.jsx
+│   │   └── ProtectedRoutes.jsx
+│   └── SoftwareApplication
+│       ├── community_Post
+│       │   ├── community_post_components
+│       │   │   └── CommunityPost.jsx
+│       │   └── CommunityPostMain.jsx
+│       ├── dashboard
+│       │   ├── dashboard_components
+│       │   │   ├── EmergencyContact.jsx
+│       │   │   ├── QuickActions.jsx
+│       │   │   ├── RecentReports.jsx
+│       │   │   └── SosHistory.jsx
+│       │   └── DashboardMain.jsx
+│       ├── emergency_contact_number
+│       │   ├── emergency_contact_components
+│       │   │   ├── AddEmergencyContactModal.jsx
+│       │   │   ├── AllEmergencyContactCards.jsx
+│       │   │   └── DeleteEmergencyContactModal.jsx
+│       │   └── EmergencyContactMain.jsx
+│       ├── Incident_Reports
+│       │   ├── incident_reports_components
+│       │   │   ├── IncidentReportsCard.jsx
+│       │   │   └── IncidentReportsModal.jsx
+│       │   └── IncidentReportsMain.jsx
+│       ├── layout
+│       │   ├── SideBar.jsx
+│       │   └── TopBar.jsx
+│       ├── profile
+│       │   ├── profile_components
+│       │   │   ├── EmergencyContact.jsx
+│       │   │   ├── PersonalInformation.jsx
+│       │   │   ├── PrivacySettings.jsx
+│       │   │   ├── Profile.jsx
+│       │   │   └── QuickLinks.jsx
+│       │   └── ProfileMain.jsx
+│       ├── routes_for_software_application
+│       │   └── SoftwareApplicationRoutes.jsx
+│       ├── software_applications_pages
+│       │   ├── CommunityPostPage.jsx
+│       │   ├── DashboardPage.jsx
+│       │   ├── EmergencyContactPage.jsx
+│       │   ├── IncidentReportsPage.jsx
+│       │   ├── ProfilePage.jsx
+│       │   ├── SOSHistoryPage.jsx
+│       │   └── SOSPage.jsx
+│       ├── sos
+│       │   ├── sos_components
+│       │   │   └── SOSButton.jsx
+│       │   └── SOSMain.jsx
+│       └── sos_history
+│           ├── sos_history_components
+│           │   ├── SOSCards.jsx
+│           │   └── SOSHistoryTable.jsx
+│           └── SosHistoryMain.jsx
+├── src-structure.txt
+└── vite.config.js
+
+40 directories, 86 files

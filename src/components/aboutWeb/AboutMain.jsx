@@ -18,8 +18,8 @@ const AboutMain = () => {
   return (
     <div id="about">
       <AboutSection />
-      <AboutStats />
-      <WhyChooseSafeHer />
+      {/* <AboutStats /> */}
+      {/* <WhyChooseSafeHer /> */}
     </div>
   );
 };
