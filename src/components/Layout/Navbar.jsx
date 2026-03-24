@@ -21,7 +21,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import { FiLogIn, FiShield } from 'react-icons/fi';
+import { FiLogIn } from 'react-icons/fi';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
@@ -153,35 +153,22 @@ const Navbar = () => {
             flexShrink: 0,
           }}
         >
-          {/* Icon badge */}
           <span
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)',
-              boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
-              flexShrink: 0,
+              height: '70px', // controls logo space
             }}
           >
-            <FiShield
-              style={{ color: '#fff', fontSize: '20px', strokeWidth: 2.5 }}
+            <img
+              src="/save har.jpg"
+              alt="safeher"
+              style={{
+                height: '100%',
+                width: 'auto',
+                objectFit: 'contain',
+              }}
             />
-          </span>
-
-          <span
-            style={{
-              fontSize: '22px',
-              fontWeight: 700,
-              color: '#1e1b4b',
-              letterSpacing: '-0.3px',
-              lineHeight: 1,
-            }}
-          >
-            Safe<span style={{ color: '#6366f1' }}>Her</span>
           </span>
         </NavLink>
 

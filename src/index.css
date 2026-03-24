@@ -1,1 +1,63 @@
-@import "tailwindcss";
+/**
+ * File: src/index.css
+ * Updated: 2026-03-17
+ *
+ * Purpose:
+ * - Global styles with Tailwind CSS v4 imports
+ * - Custom animations for dropdowns
+ *
+ * Dependencies:
+ * - Tailwind CSS v4
+ */
+
+@import 'tailwindcss';
+
+/* Custom animations for dropdowns */
+@keyframes dropdown {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-dropdown {
+  animation: dropdown 0.2s ease-out forwards;
+}
+
+/* Custom scrollbar styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 20px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* SOS fade-in animation — moved from SOSButton.jsx style jsx block */
+@keyframes sosFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sos-fade-in {
+  animation: sosFadeIn 0.3s ease-out;
+}
