@@ -1,27 +1,25 @@
 /**
- * File: save_her/src/SoftwareApplication/emergency_contact/emergency_contact_components/DeleteEmergencyContactModal.jsx
- * Updated: 2026-02-04
+ * File: src/SoftwareApplication/emergency_contact/emergency_contact_components/DeleteEmergencyContactModal.jsx
+ * Updated: 2026-03-23
  *
  * Purpose:
- * - Delete confirmation modal with glass morphism effect
- * - Asks user to confirm before deleting a contact
- * - Shows contact details being deleted
+ * - Delete confirmation modal
+ * - Shows contact name and phone before confirming
  *
  * Changes:
- * - Added glass effect with backdrop-blur and white/95 background
- * - Implemented keyboard navigation (Escape to cancel)
- * - Added proper accessibility attributes
- * - Made fully responsive
+ * - Added isDeleting prop to show loading state on confirm button
+ * - Escape key and overlay click disabled during delete API call
+ * - All existing logic and accessibility preserved
  *
  * Connected Modules:
- * - Used by EmergencyContactMain.jsx for delete confirmations
+ * - Used by EmergencyContactMain.jsx
  *
  * Dependencies:
- * - react-icons/ri for warning and close icons
+ * - react-icons/ri: Warning, close, loader icons
  */
 
 import { useEffect, useRef } from 'react';
-import { RiCloseLine, RiErrorWarningLine } from 'react-icons/ri';
+import { RiCloseLine, RiErrorWarningLine, RiLoader4Line } from 'react-icons/ri';
 
 const DeleteEmergencyContactModal = ({
   isOpen,
@@ -29,32 +27,31 @@ const DeleteEmergencyContactModal = ({
   onConfirm,
   contactName,
   contactPhone,
+  isDeleting = false,
 }) => {
   const modalRef = useRef(null);
   const cancelButtonRef = useRef(null);
 
-  // Focus trap and auto-focus on cancel button
   useEffect(() => {
     if (isOpen && cancelButtonRef.current) {
       cancelButtonRef.current.focus();
     }
   }, [isOpen]);
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && !isDeleting) {
         onClose();
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isDeleting]);
 
   if (!isOpen) return null;
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !isDeleting) {
       onClose();
     }
   };
@@ -77,7 +74,6 @@ const DeleteEmergencyContactModal = ({
         aria-labelledby="delete-modal-title"
         aria-describedby="delete-modal-description"
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h3
             id="delete-modal-title"
@@ -87,23 +83,29 @@ const DeleteEmergencyContactModal = ({
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            disabled={isDeleting}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:ring-offset-2"
             aria-label="Close modal"
           >
-            <RiCloseLine className="text-xl" />
+            <RiCloseLine className="text-xl" aria-hidden="true" />
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <RiErrorWarningLine className="text-2xl text-red-500" />
+                <RiErrorWarningLine
+                  className="text-2xl text-red-500"
+                  aria-hidden="true"
+                />
               </div>
             </div>
             <div className="flex-1">
-              <p id="delete-modal-description" className="text-gray-600 mb-2">
+              <p
+                id="delete-modal-description"
+                className="text-gray-600 mb-2"
+              >
                 Are you sure you want to delete this contact?
               </p>
               {contactName && (
@@ -120,23 +122,27 @@ const DeleteEmergencyContactModal = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <button
               ref={cancelButtonRef}
               type="button"
               onClick={onClose}
-              className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer border-2 border-gray-300 text-gray-700 hover:bg-gray-100 flex-1 order-2 sm:order-1"
+              disabled={isDeleting}
+              className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer border-2 border-gray-300 text-gray-700 hover:bg-gray-100 flex-1 order-2 sm:order-1 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={onConfirm}
-              className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30 flex-1 order-1 sm:order-2"
+              disabled={isDeleting}
+              className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30 flex-1 order-1 sm:order-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               aria-label="Confirm delete"
             >
-              Delete Contact
+              {isDeleting && (
+                <RiLoader4Line className="animate-spin" aria-hidden="true" />
+              )}
+              {isDeleting ? 'Deleting...' : 'Delete Contact'}
             </button>
           </div>
         </div>

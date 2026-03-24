@@ -1,32 +1,32 @@
 /**
- * File: save_her/src/SoftwareApplication/emergency_contact/emergency_contact_components/AddEmergencyContactModal.jsx
- * Updated: 2026-02-04
+ * File: src/SoftwareApplication/emergency_contact/emergency_contact_components/AddEmergencyContactModal.jsx
+ * Updated: 2026-03-23
  *
  * Purpose:
  * - Modal form for adding or editing emergency contacts
- * - Fully responsive with proper keyboard navigation
- * - Includes form validation for required fields
+ * - Submits to API via parent handler
  *
  * Changes:
- * - Added glass effect with backdrop-blur
- * - Used white/95 for semi-transparent background
- * - Preserved all form validation and accessibility
+ * - Added isSaving prop to disable buttons during API call
+ * - Submit button shows "Saving..." during API request
+ * - All existing validation and accessibility logic preserved
  *
  * Connected Modules:
  * - Used by EmergencyContactMain.jsx
  *
  * Dependencies:
- * - react-icons/ri for close icon
+ * - react-icons/ri: Close icon
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { RiCloseLine } from 'react-icons/ri';
+import { RiCloseLine, RiLoader4Line } from 'react-icons/ri';
 
 const AddEmergencyContactModal = ({
   isOpen,
   onClose,
   onSave,
   editingContact,
+  isSaving = false,
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -37,7 +37,6 @@ const AddEmergencyContactModal = ({
   const modalRef = useRef(null);
   const nameInputRef = useRef(null);
 
-  // Load contact data when editing
   useEffect(() => {
     if (editingContact) {
       setFormData({
@@ -51,23 +50,21 @@ const AddEmergencyContactModal = ({
     setErrors({});
   }, [editingContact, isOpen]);
 
-  // Focus trap and auto-focus on name input
   useEffect(() => {
     if (isOpen && nameInputRef.current) {
       nameInputRef.current.focus();
     }
   }, [isOpen]);
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && !isSaving) {
         onClose();
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isSaving]);
 
   if (!isOpen) return null;
 
@@ -81,7 +78,7 @@ const AddEmergencyContactModal = ({
     }
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^[\d\s\+\-\(\)]+$/.test(formData.phone)) {
+    } else if (!/^\+?[\d\s\-\(\)]{7,15}$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
     setErrors(newErrors);
@@ -98,17 +95,22 @@ const AddEmergencyContactModal = ({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !isSaving) {
       onClose();
     }
   };
+
+  const isSubmitDisabled =
+    isSaving ||
+    !formData.name.trim() ||
+    !formData.relationship.trim() ||
+    !formData.phone.trim();
 
   return (
     <div
@@ -135,16 +137,17 @@ const AddEmergencyContactModal = ({
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            disabled={isSaving}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:ring-offset-2"
             aria-label="Close modal"
           >
-            <RiCloseLine className="text-xl" />
+            <RiCloseLine className="text-xl" aria-hidden="true" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
-            {/* Name Field */}
+            {/* Name */}
             <div>
               <label
                 htmlFor="name"
@@ -159,7 +162,8 @@ const AddEmergencyContactModal = ({
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 text-sm focus:outline-none ${
+                disabled={isSaving}
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.name
                     ? 'border-red-500 focus:border-red-500'
                     : 'border-gray-200 focus:border-[#6C63FF]'
@@ -169,13 +173,17 @@ const AddEmergencyContactModal = ({
                 aria-describedby={errors.name ? 'name-error' : undefined}
               />
               {errors.name && (
-                <p id="name-error" className="mt-1 text-sm text-red-500">
+                <p
+                  id="name-error"
+                  className="mt-1 text-sm text-red-500"
+                  role="alert"
+                >
                   {errors.name}
                 </p>
               )}
             </div>
 
-            {/* Relationship Field */}
+            {/* Relationship */}
             <div>
               <label
                 htmlFor="relationship"
@@ -189,7 +197,8 @@ const AddEmergencyContactModal = ({
                 name="relationship"
                 value={formData.relationship}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 text-sm focus:outline-none ${
+                disabled={isSaving}
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.relationship
                     ? 'border-red-500 focus:border-red-500'
                     : 'border-gray-200 focus:border-[#6C63FF]'
@@ -204,13 +213,14 @@ const AddEmergencyContactModal = ({
                 <p
                   id="relationship-error"
                   className="mt-1 text-sm text-red-500"
+                  role="alert"
                 >
                   {errors.relationship}
                 </p>
               )}
             </div>
 
-            {/* Phone Field */}
+            {/* Phone */}
             <div>
               <label
                 htmlFor="phone"
@@ -224,7 +234,8 @@ const AddEmergencyContactModal = ({
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 text-sm focus:outline-none ${
+                disabled={isSaving}
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.phone
                     ? 'border-red-500 focus:border-red-500'
                     : 'border-gray-200 focus:border-[#6C63FF]'
@@ -234,31 +245,39 @@ const AddEmergencyContactModal = ({
                 aria-describedby={errors.phone ? 'phone-error' : undefined}
               />
               {errors.phone && (
-                <p id="phone-error" className="mt-1 text-sm text-red-500">
+                <p
+                  id="phone-error"
+                  className="mt-1 text-sm text-red-500"
+                  role="alert"
+                >
                   {errors.phone}
                 </p>
               )}
             </div>
 
-            {/* Action Buttons */}
+            {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer border-2 border-[#6C63FF] text-[#6C63FF] hover:bg-[#6C63FF] hover:text-white flex-1 order-2 sm:order-1"
+                disabled={isSaving}
+                className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer border-2 border-[#6C63FF] text-[#6C63FF] hover:bg-[#6C63FF] hover:text-white flex-1 order-2 sm:order-1 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#6C63FF] text-white hover:bg-[#5a52e6] shadow-lg shadow-[#6C63FF]/30 flex-1 order-1 sm:order-2"
-                disabled={
-                  !formData.name.trim() ||
-                  !formData.relationship.trim() ||
-                  !formData.phone.trim()
-                }
+                disabled={isSubmitDisabled}
+                className="px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#6C63FF] text-white hover:bg-[#5a52e6] shadow-lg shadow-[#6C63FF]/30 flex-1 order-1 sm:order-2 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:ring-offset-2"
               >
-                {editingContact ? 'Update Contact' : 'Add Contact'}
+                {isSaving && (
+                  <RiLoader4Line className="animate-spin" aria-hidden="true" />
+                )}
+                {isSaving
+                  ? 'Saving...'
+                  : editingContact
+                    ? 'Update Contact'
+                    : 'Add Contact'}
               </button>
             </div>
           </div>

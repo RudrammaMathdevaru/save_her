@@ -1,6 +1,6 @@
 /**
  * File: src/SoftwareApplication/layout/TopBar.jsx
- * Updated: 2026-03-17
+ * Updated: 2026-03-18
  *
  * Purpose:
  * - Enterprise-grade top navigation bar with black/white theme
@@ -10,14 +10,17 @@
  * - Smooth dropdown animations with proper positioning
  * - Full accessibility support with keyboard navigation
  *
+ * Changes:
+ * - Added real user data from AuthContext
+ * - Updated user avatar with initials
+ *
  * Connected Modules:
  * - SoftwareApplicationRoutes.jsx (parent layout)
  * - SideBar.jsx (receives toggle state)
  *
  * Dependencies:
  * - react-icons/fi: Feather icons
- * - react: Hooks for state management
- * - Tailwind CSS v4: Styling (via vite.config.js)
+ * - useAuth: Authentication context
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -30,6 +33,7 @@ import {
   FiSettings,
   FiUser,
 } from 'react-icons/fi';
+import { useAuth } from '../../hooks/useAuth.js';
 
 const TopBar = ({
   onMobileMenuToggle,
@@ -38,6 +42,7 @@ const TopBar = ({
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout } = useAuth();
 
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -73,8 +78,20 @@ const TopBar = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logout();
     window.location.href = '/';
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user || !user.full_name) return 'U';
+
+    const names = user.full_name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return user.full_name.substring(0, 2).toUpperCase();
   };
 
   const notifications = [
@@ -240,10 +257,10 @@ const TopBar = ({
                 transform-gpu transition-transform
               "
             >
-              JD
+              {getUserInitials()}
             </div>
             <span className="hidden md:block text-sm font-medium text-black">
-              Jane Doe
+              {user?.full_name?.split(' ')[0] || 'User'}
             </span>
           </button>
 

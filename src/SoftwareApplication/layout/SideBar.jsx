@@ -11,9 +11,9 @@
  * - Responsive mobile drawer with overlay
  *
  * Changes:
- * - Added Incident Reports navigation item between Community and Profile
- * - Used FiAlertTriangle icon for Incident Reports feature
- * - Maintained consistent ordering and styling
+ * - Added real user data from AuthContext
+ * - Added logout functionality
+ * - Preserved all existing styling and animations
  *
  * Connected Modules:
  * - SoftwareApplicationRoutes.jsx (parent layout)
@@ -22,7 +22,7 @@
  * Dependencies:
  * - react-icons/fi: Feather icons
  * - react-router-dom: Navigation
- * - Tailwind CSS v4: Styling (via vite.config.js)
+ * - useAuth: Authentication context
  */
 
 import { useEffect, useRef } from 'react';
@@ -36,7 +36,8 @@ import {
   FiUser,
   FiUsers,
 } from 'react-icons/fi';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth.js';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: FiHome, label: 'Dashboard' },
@@ -54,6 +55,8 @@ const NAV_ITEMS = [
 
 const SideBar = ({ isCollapsed, isMobile, isOpen, onClose }) => {
   const sidebarRef = useRef(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Handle escape key for mobile drawer
   useEffect(() => {
@@ -116,6 +119,9 @@ const SideBar = ({ isCollapsed, isMobile, isOpen, onClose }) => {
             isCollapsed={false}
             isMobile={true}
             onClose={onClose}
+            user={user}
+            onLogout={logout}
+            navigate={navigate}
           />
         </aside>
       </>
@@ -135,21 +141,63 @@ const SideBar = ({ isCollapsed, isMobile, isOpen, onClose }) => {
       aria-label="Main navigation"
       style={{ willChange: 'width' }}
     >
-      <SidebarContent isCollapsed={isCollapsed} />
+      <SidebarContent
+        isCollapsed={isCollapsed}
+        user={user}
+        onLogout={logout}
+        navigate={navigate}
+      />
     </aside>
   );
 };
 
-const SidebarContent = ({ isCollapsed, isMobile, onClose }) => {
+const SidebarContent = ({
+  isCollapsed,
+  isMobile,
+  onClose,
+  user,
+  onLogout,
+  navigate,
+}) => {
   const handleNavClick = () => {
     if (isMobile && onClose) {
       onClose();
     }
   };
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    window.location.href = '/';
+  const handleLogout = async () => {
+    await onLogout();
+    navigate('/');
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user || !user.full_name) return 'U';
+
+    const names = user.full_name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return user.full_name.substring(0, 2).toUpperCase();
+  };
+
+  // Get display name (first name or full name)
+  const getDisplayName = () => {
+    if (!user || !user.full_name) return 'User';
+
+    const names = user.full_name.split(' ');
+    return names[0]; // First name
+  };
+
+  // Get email for display (truncated if too long)
+  const getDisplayEmail = () => {
+    if (!user || !user.email) return '';
+
+    const email = user.email;
+    if (email.length > 20) {
+      return `${email.substring(0, 17)}...`;
+    }
+    return email;
   };
 
   return (
@@ -243,7 +291,7 @@ const SidebarContent = ({ isCollapsed, isMobile, onClose }) => {
           `}
         >
           <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-semibold flex-shrink-0 transform-gpu transition-transform hover:scale-105">
-            JD
+            {getUserInitials()}
           </div>
 
           {/* User info with opacity transition only */}
@@ -254,8 +302,12 @@ const SidebarContent = ({ isCollapsed, isMobile, onClose }) => {
             `}
             aria-hidden={isCollapsed}
           >
-            <p className="text-sm font-medium text-black truncate">Jane Doe</p>
-            <p className="text-xs text-gray-500 truncate">jane@safeher.com</p>
+            <p className="text-sm font-medium text-black truncate">
+              {getDisplayName()}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {getDisplayEmail()}
+            </p>
           </div>
         </div>
 

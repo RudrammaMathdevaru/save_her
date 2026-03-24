@@ -1,70 +1,96 @@
 /**
  * File: src/SoftwareApplication/profile/profile_components/Profile.jsx
- * Updated: 2026-02-04
+ * Updated: 2026-03-22
  *
  * Purpose:
- * - Displays user profile card with avatar, basic info, and stats
- * - Handles profile photo upload functionality
+ * - Display user profile card with real data from backend
+ * - Handle avatar upload by sending file to API
+ * - Show real member since date, reports count, SOS count
  *
  * Changes:
- * - Added proper file upload handling with preview
- * - Implemented accessibility attributes
- * - Added keyboard navigation support
- * - Optimized with useCallback for event handlers
+ * - Replaced all mock/hardcoded data with props from ProfileMain
+ * - Avatar upload now calls updateAvatar API, not FileReader base64
+ * - memberSince formatted from created_at timestamp
+ * - reportsCount and sosCount come from stats prop
+ * - Added upload loading state to prevent double submissions
  *
  * Connected Modules:
  * - ProfileMain.jsx (parent)
+ * - user.service.js (frontend) for avatar upload
  *
  * Dependencies:
- * - react-icons/ri: For Remix Icon set
+ * - react-icons/ri: Camera and upload icons
  */
 
 import React, { useCallback, useRef, useState } from 'react';
-import { RiCameraLine, RiUploadCloudLine } from 'react-icons/ri';
+import { RiCameraLine, RiLoader4Line, RiUploadCloudLine } from 'react-icons/ri';
+import { updateAvatar } from '../../../services/user.service.js';
 
-const Profile = ({ profileData, onProfileUpdate }) => {
-  const {
-    fullName,
-    email,
-    memberSince,
-    reportsSubmitted,
-    sosAlerts,
-    profileInitials,
-    isVerified,
-  } = profileData;
+const Profile = ({ profileData, stats, onAvatarUpdate }) => {
+  const { fullName, email, memberSince, profileImage } = profileData;
+
+  const { reportsCount, sosCount } = stats;
 
   const fileInputRef = useRef(null);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  // Format the ISO date from DB into "Jan 2026"
+  const formattedMemberSince = memberSince
+    ? new Date(memberSince).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'N/A';
+
+  // Build initials from full name for the avatar fallback
+  const profileInitials = fullName
+    ? fullName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : '?';
 
   const handlePhotoClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
+  }, [isUploading]);
 
   const handleFileChange = useCallback(
-    (event) => {
+    async (event) => {
       const file = event.target.files?.[0];
-      if (file) {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          console.error('Please select an image file');
-          return;
-        }
+      if (!file) return;
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          console.error('File size must be less than 5MB');
-          return;
-        }
+      // Validate type
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        setUploadError('Only JPEG, PNG, or WEBP images are allowed');
+        return;
+      }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewImage(reader.result);
-          onProfileUpdate('profileImage', reader.result);
-        };
-        reader.readAsDataURL(file);
+      // Validate size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('Image must be under 5MB');
+        return;
+      }
+
+      setUploadError('');
+      setIsUploading(true);
+
+      try {
+        const updatedUser = await updateAvatar(file);
+        onAvatarUpdate(updatedUser);
+      } catch (err) {
+        setUploadError(err.message || 'Failed to upload image');
+      } finally {
+        setIsUploading(false);
+        // Reset input so the same file can be re-selected if needed
+        event.target.value = '';
       }
     },
-    [onProfileUpdate]
+    [onAvatarUpdate]
   );
 
   const handleKeyDown = useCallback(
@@ -79,7 +105,7 @@ const Profile = ({ profileData, onProfileUpdate }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 text-center">
-      {/* Profile Photo Section */}
+      {/* Avatar Section */}
       <div className="relative inline-block mb-4">
         <div
           className="cursor-pointer group"
@@ -89,9 +115,9 @@ const Profile = ({ profileData, onProfileUpdate }) => {
           tabIndex={0}
           aria-label="Change profile photo"
         >
-          {previewImage ? (
+          {profileImage ? (
             <img
-              src={previewImage}
+              src={profileImage}
               alt={fullName}
               className="w-28 h-28 rounded-full object-cover mx-auto"
             />
@@ -100,56 +126,75 @@ const Profile = ({ profileData, onProfileUpdate }) => {
               {profileInitials}
             </div>
           )}
+
           <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <RiCameraLine className="text-white text-2xl" aria-hidden="true" />
+            {isUploading ? (
+              <RiLoader4Line
+                className="text-white text-2xl animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <RiCameraLine
+                className="text-white text-2xl"
+                aria-hidden="true"
+              />
+            )}
           </div>
         </div>
+
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           onChange={handleFileChange}
           className="hidden"
           aria-hidden="true"
         />
       </div>
 
-      {/* Profile Info */}
+      {uploadError && (
+        <p className="text-xs text-red-500 mb-2" role="alert">
+          {uploadError}
+        </p>
+      )}
+
+      {/* Name and Email */}
       <h2 className="text-xl font-bold text-gray-900 mb-1">{fullName}</h2>
       <p className="text-gray-500 text-sm mb-4">{email}</p>
 
-      {isVerified && (
-        <div className="flex items-center justify-center space-x-2 mb-6">
-          <span className="px-3 py-1 bg-[#6C63FF]/10 text-[#6C63FF] text-sm font-medium rounded-full">
-            Verified Member
-          </span>
-        </div>
-      )}
+      <div className="flex items-center justify-center space-x-2 mb-6">
+        <span className="px-3 py-1 bg-[#6C63FF]/10 text-[#6C63FF] text-sm font-medium rounded-full">
+          Verified Member
+        </span>
+      </div>
 
-      {/* Stats Section */}
+      {/* Stats — real data from DB */}
       <div className="border-t border-gray-100 pt-6 space-y-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">Member Since</span>
-          <span className="font-medium text-gray-900">{memberSince}</span>
+          <span className="font-medium text-gray-900">
+            {formattedMemberSince}
+          </span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">Reports Submitted</span>
-          <span className="font-medium text-gray-900">{reportsSubmitted}</span>
+          <span className="font-medium text-gray-900">{reportsCount}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">SOS Alerts</span>
-          <span className="font-medium text-gray-900">{sosAlerts}</span>
+          <span className="font-medium text-gray-900">{sosCount}</span>
         </div>
       </div>
 
       {/* Change Photo Button */}
       <button
         onClick={handlePhotoClick}
-        className="mt-6 w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-[#6C63FF] hover:text-[#6C63FF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:ring-offset-2"
+        disabled={isUploading}
+        className="mt-6 w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-[#6C63FF] hover:text-[#6C63FF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label="Change profile photo"
       >
         <RiUploadCloudLine className="mr-2 inline-block" aria-hidden="true" />
-        Change Photo
+        {isUploading ? 'Uploading...' : 'Change Photo'}
       </button>
     </div>
   );

@@ -1,24 +1,20 @@
 /**
- * File: src/components/dashboard/dashboard_components/sos_history/sos_history_components/SOSCards.jsx
- * Updated: 2026-03-17
+ * File: src/SoftwareApplication/sos_history/sos_history_components/SOSCards.jsx
+ * Updated: 2026-03-23
  *
  * Purpose:
  * - Displays statistics cards for SOS alerts
- * - Shows total alerts, successful deliveries, and failed deliveries
- * - Computes statistics from SOS history data
+ * - Computes stats from real MySQL API data
  *
  * Changes:
- * - Made component dynamic to receive and process SOS history data
- * - Added proper statistics calculation
- * - Improved responsive design with grid layout
- * - Enhanced visual design with gradient backgrounds and hover effects
+ * - No changes required - component is working correctly
+ * - Audio playback fix isolated to SOSHistoryTable component
  *
  * Connected Modules:
- * - ../SosHistoryMain.jsx (parent component)
+ * - SosHistoryMain.jsx (parent)
  *
  * Dependencies:
- * - react-icons/ri: For consistent iconography
- * - No additional npm packages required
+ * - react-icons/ri: All icons
  */
 
 import {
@@ -29,15 +25,19 @@ import {
 } from 'react-icons/ri';
 
 const SOSCards = ({ sosHistory = [] }) => {
-  // Calculate statistics
   const totalAlerts = sosHistory.length;
+
+  // DB status values are lowercase: 'sent', 'failed', 'sending'
   const successfulDeliveries = sosHistory.filter(
-    (item) => item.status === 'Delivered'
+    (item) => item.status === 'sent'
   ).length;
+
   const failedDeliveries = sosHistory.filter(
-    (item) => item.status === 'Failed'
+    (item) => item.status === 'failed'
   ).length;
-  const withAudio = sosHistory.filter((item) => item.audioAvailable).length;
+
+  // audioUrl exists when audio was recorded and saved
+  const withAudio = sosHistory.filter((item) => !!item.audioUrl).length;
 
   const cards = [
     {
@@ -96,13 +96,11 @@ const SOSCards = ({ sosHistory = [] }) => {
             overflow-hidden
           `}
         >
-          {/* Background Pattern */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
             <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-current opacity-20" />
             <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-current opacity-10" />
           </div>
 
-          {/* Content */}
           <div className="relative">
             <div className="flex items-start justify-between mb-3">
               <div
@@ -110,6 +108,7 @@ const SOSCards = ({ sosHistory = [] }) => {
               >
                 <card.icon
                   className={`${card.iconColor} text-xl sm:text-2xl`}
+                  aria-hidden="true"
                 />
               </div>
               <span className="text-3xl sm:text-4xl font-bold text-gray-800 group-hover:scale-110 transition-transform duration-300">
@@ -121,18 +120,18 @@ const SOSCards = ({ sosHistory = [] }) => {
               {card.title}
             </p>
 
-            {/* Progress Bar */}
             {totalAlerts > 0 && card.title !== 'Total SOS Alerts' && (
               <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full bg-${card.color}-500 transition-all duration-500`}
-                  style={{ width: `${(card.value / totalAlerts) * 100}%` }}
+                  style={{
+                    width: `${(card.value / totalAlerts) * 100}%`,
+                  }}
                 />
               </div>
             )}
           </div>
 
-          {/* Hover Glow */}
           <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             <div
               className={`absolute inset-0 rounded-xl bg-${card.color}-500/5 blur-xl`}

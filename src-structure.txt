@@ -55,9 +55,18 @@
 │   │   │   ├── reports_components
 │   │   │   │   └── PublicReports.jsx
 │   │   │   └── Reports.jsx
-│   │   └── serviseWeb
-│   │       ├── ServiceMain.jsx
-│   │       └── sevice_web_components
+│   │   ├── serviseWeb
+│   │   │   ├── ServiceMain.jsx
+│   │   │   └── sevice_web_components
+│   │   └── UI
+│   │       ├── Loader.jsx
+│   │       ├── Toast.jsx
+│   │       └── ToastContainer.jsx
+│   ├── context
+│   │   └── AuthContext.jsx
+│   ├── hooks
+│   │   ├── useAuth.js
+│   │   └── useToast.js
 │   ├── index.css
 │   ├── main.jsx
 │   ├── pages
@@ -69,60 +78,66 @@
 │   ├── Routes
 │   │   ├── AppRoutes.jsx
 │   │   └── ProtectedRoutes.jsx
-│   └── SoftwareApplication
-│       ├── community_Post
-│       │   ├── community_post_components
-│       │   │   └── CommunityPost.jsx
-│       │   └── CommunityPostMain.jsx
-│       ├── dashboard
-│       │   ├── dashboard_components
-│       │   │   ├── EmergencyContact.jsx
-│       │   │   ├── QuickActions.jsx
-│       │   │   ├── RecentReports.jsx
-│       │   │   └── SosHistory.jsx
-│       │   └── DashboardMain.jsx
-│       ├── emergency_contact_number
-│       │   ├── emergency_contact_components
-│       │   │   ├── AddEmergencyContactModal.jsx
-│       │   │   ├── AllEmergencyContactCards.jsx
-│       │   │   └── DeleteEmergencyContactModal.jsx
-│       │   └── EmergencyContactMain.jsx
-│       ├── Incident_Reports
-│       │   ├── incident_reports_components
-│       │   │   ├── IncidentReportsCard.jsx
-│       │   │   └── IncidentReportsModal.jsx
-│       │   └── IncidentReportsMain.jsx
-│       ├── layout
-│       │   ├── SideBar.jsx
-│       │   └── TopBar.jsx
-│       ├── profile
-│       │   ├── profile_components
-│       │   │   ├── EmergencyContact.jsx
-│       │   │   ├── PersonalInformation.jsx
-│       │   │   ├── PrivacySettings.jsx
-│       │   │   ├── Profile.jsx
-│       │   │   └── QuickLinks.jsx
-│       │   └── ProfileMain.jsx
-│       ├── routes_for_software_application
-│       │   └── SoftwareApplicationRoutes.jsx
-│       ├── software_applications_pages
-│       │   ├── CommunityPostPage.jsx
-│       │   ├── DashboardPage.jsx
-│       │   ├── EmergencyContactPage.jsx
-│       │   ├── IncidentReportsPage.jsx
-│       │   ├── ProfilePage.jsx
-│       │   ├── SOSHistoryPage.jsx
-│       │   └── SOSPage.jsx
-│       ├── sos
-│       │   ├── sos_components
-│       │   │   └── SOSButton.jsx
-│       │   └── SOSMain.jsx
-│       └── sos_history
-│           ├── sos_history_components
-│           │   ├── SOSCards.jsx
-│           │   └── SOSHistoryTable.jsx
-│           └── SosHistoryMain.jsx
+│   ├── services
+│   │   ├── auth.service.js
+│   │   ├── axiosConfig.js
+│   │   └── user.service.js
+│   ├── SoftwareApplication
+│   │   ├── community_Post
+│   │   │   ├── community_post_components
+│   │   │   │   └── CommunityPost.jsx
+│   │   │   └── CommunityPostMain.jsx
+│   │   ├── dashboard
+│   │   │   ├── dashboard_components
+│   │   │   │   ├── EmergencyContact.jsx
+│   │   │   │   ├── QuickActions.jsx
+│   │   │   │   ├── RecentReports.jsx
+│   │   │   │   └── SosHistory.jsx
+│   │   │   └── DashboardMain.jsx
+│   │   ├── emergency_contact_number
+│   │   │   ├── emergency_contact_components
+│   │   │   │   ├── AddEmergencyContactModal.jsx
+│   │   │   │   ├── AllEmergencyContactCards.jsx
+│   │   │   │   └── DeleteEmergencyContactModal.jsx
+│   │   │   └── EmergencyContactMain.jsx
+│   │   ├── Incident_Reports
+│   │   │   ├── incident_reports_components
+│   │   │   │   ├── IncidentReportsCard.jsx
+│   │   │   │   └── IncidentReportsModal.jsx
+│   │   │   └── IncidentReportsMain.jsx
+│   │   ├── layout
+│   │   │   ├── SideBar.jsx
+│   │   │   └── TopBar.jsx
+│   │   ├── profile
+│   │   │   ├── profile_components
+│   │   │   │   ├── EmergencyContact.jsx
+│   │   │   │   ├── PersonalInformation.jsx
+│   │   │   │   ├── PrivacySettings.jsx
+│   │   │   │   ├── Profile.jsx
+│   │   │   │   └── QuickLinks.jsx
+│   │   │   └── ProfileMain.jsx
+│   │   ├── routes_for_software_application
+│   │   │   └── SoftwareApplicationRoutes.jsx
+│   │   ├── software_applications_pages
+│   │   │   ├── CommunityPostPage.jsx
+│   │   │   ├── DashboardPage.jsx
+│   │   │   ├── EmergencyContactPage.jsx
+│   │   │   ├── IncidentReportsPage.jsx
+│   │   │   ├── ProfilePage.jsx
+│   │   │   ├── SOSHistoryPage.jsx
+│   │   │   └── SOSPage.jsx
+│   │   ├── sos
+│   │   │   ├── sos_components
+│   │   │   │   └── SOSButton.jsx
+│   │   │   └── SOSMain.jsx
+│   │   └── sos_history
+│   │       ├── sos_history_components
+│   │       │   ├── SOSCards.jsx
+│   │       │   └── SOSHistoryTable.jsx
+│   │       └── SosHistoryMain.jsx
+│   └── utils
+│       └── constants.js
 ├── src-structure.txt
 └── vite.config.js
 
-40 directories, 86 files
+45 directories, 96 files

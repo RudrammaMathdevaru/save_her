@@ -1,27 +1,36 @@
 /**
  * File: src/SoftwareApplication/profile/ProfileMain.jsx
- * Updated: 2026-02-04
+ * Updated: 2026-03-22
  *
  * Purpose:
- * - Main container component for the profile page
- * - Orchestrates layout of all profile components
- * - Manages shared profile state across components
+ * - Main container for the profile page
+ * - Fetches real user data and stats from backend on mount
+ * - Distributes data and update handlers to child components
  *
  * Changes:
- * - Implemented responsive grid layout matching reference design
- * - Added proper state management for profile data
- * - Integrated all profile components with shared state
- * - Added error boundary for production stability
+ * - Connected to getUserProfile and getUserStats API calls
+ * - Added loading and error states
+ * - Replaced all hardcoded mock data with real API data
+ * - privacySettings remain static as requested
  *
  * Connected Modules:
- * - All profile components (Profile, QuickLinks, EmergencyContact, PersonalInformation, PrivacySettings)
+ * - Profile.jsx, PersonalInformation.jsx, EmergencyContact.jsx
+ * - PrivacySettings.jsx, QuickLinks.jsx
+ * - user.service.js (frontend)
  *
  * Dependencies:
- * - React: Core library
- * - react-icons: For consistent iconography
+ * - react: hooks
+ * - react-icons/ri: Loading spinner icon
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { RiLoader4Line } from 'react-icons/ri';
+import {
+  getUserProfile,
+  getUserStats,
+  updateEmergencyContact,
+  updateUserProfile,
+} from '../../services/user.service.js';
 import EmergencyContact from './profile_components/EmergencyContact';
 import PersonalInformation from './profile_components/PersonalInformation';
 import PrivacySettings from './profile_components/PrivacySettings';
@@ -29,73 +38,117 @@ import Profile from './profile_components/Profile';
 import QuickLinks from './profile_components/QuickLinks';
 
 const ProfileMain = () => {
-  // Shared profile state
-  const [profileData, setProfileData] = useState({
-    fullName: 'Sarah Johnson',
-    email: 'sarah.johnson@example.com',
-    phone: '+1 (555) 123-4567',
-    location: 'New York, NY',
-    bio: 'Community safety advocate and active member of SafeHer platform.',
-    emergencyContact: '+1 (555) 987-6543',
-    memberSince: 'Jan 2026',
-    reportsSubmitted: 12,
-    sosAlerts: 2,
-    profileInitials: 'SJ',
-    isVerified: true,
-  });
+  const [profileData, setProfileData] = useState(null);
+  const [stats, setStats] = useState({ reportsCount: 0, sosCount: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const [privacySettings, setPrivacySettings] = useState({
+  // Privacy settings are static as requested
+  const [privacySettings] = useState({
     profileVisibility: true,
     locationSharing: true,
     emailNotifications: true,
   });
 
-  // Memoized update handlers
-  const handleProfileUpdate = useCallback((field, value) => {
-    setProfileData((prev) => ({ ...prev, [field]: value }));
+  // Fetch profile and stats on mount
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+
+        const [user, userStats] = await Promise.all([
+          getUserProfile(),
+          getUserStats(),
+        ]);
+
+        if (!cancelled) {
+          setProfileData(user);
+          setStats(userStats);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load profile');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handlePrivacyUpdate = useCallback((setting, value) => {
-    setPrivacySettings((prev) => ({ ...prev, [setting]: value }));
+  // Called by PersonalInformation after a successful save
+  const handleProfileUpdate = useCallback((updatedUser) => {
+    setProfileData((prev) => ({ ...prev, ...updatedUser }));
   }, []);
 
-  const handleEmergencyContactUpdate = useCallback((phone) => {
-    setProfileData((prev) => ({ ...prev, emergencyContact: phone }));
+  // Called by Profile.jsx after avatar upload
+  const handleAvatarUpdate = useCallback((updatedUser) => {
+    setProfileData((prev) => ({ ...prev, ...updatedUser }));
   }, []);
 
-  // Memoized profile data for child components
-  const memoizedProfileData = useMemo(() => profileData, [profileData]);
-  const memoizedPrivacySettings = useMemo(
-    () => privacySettings,
-    [privacySettings]
-  );
+  // Called by EmergencyContact after a successful save
+  const handleEmergencyContactUpdate = useCallback((updatedUser) => {
+    setProfileData((prev) => ({ ...prev, ...updatedUser }));
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <RiLoader4Line
+          className="text-4xl text-[#6C63FF] animate-spin"
+          aria-label="Loading profile"
+        />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-red-500 text-sm">{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-8xl mx-auto ">
+    <div className="max-w-8xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Profile & Quick Links */}
+        {/* Left Column */}
         <div className="lg:col-span-1">
           <Profile
-            profileData={memoizedProfileData}
-            onProfileUpdate={handleProfileUpdate}
+            profileData={profileData}
+            stats={stats}
+            onAvatarUpdate={handleAvatarUpdate}
           />
           <QuickLinks className="mt-6" />
         </div>
 
-        {/* Right Column - Personal Info, Emergency Contact, Privacy */}
+        {/* Right Column */}
         <div className="lg:col-span-2">
           <PersonalInformation
-            profileData={memoizedProfileData}
+            profileData={profileData}
             onUpdate={handleProfileUpdate}
+            updateUserProfile={updateUserProfile}
           />
           <EmergencyContact
-            emergencyContact={memoizedProfileData.emergencyContact}
+            emergencyContact={profileData.emergencyContact}
             onUpdate={handleEmergencyContactUpdate}
+            updateEmergencyContact={updateEmergencyContact}
             className="mt-6"
           />
           <PrivacySettings
-            settings={memoizedPrivacySettings}
-            onUpdate={handlePrivacyUpdate}
+            settings={privacySettings}
+            onUpdate={() => {}}
             className="mt-6"
           />
         </div>

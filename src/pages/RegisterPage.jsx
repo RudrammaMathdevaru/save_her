@@ -1,22 +1,28 @@
 /**
  * File: src/pages/RegisterPage.jsx
- * Updated: 2026-03-17
+ * Updated: 2026-03-22
  *
  * Purpose:
  * - Enterprise-grade registration page with comprehensive validation
- * - Phone number strictly 10 digits, numbers only
+ * - Phone number strictly 10 digits, numbers only, no spaces or formatting
  * - Password strength indicator
  * - Rate limiting (3 attempts → 30s cooldown)
  * - Formik + Yup for robust form management
+ * - Integrated with backend API via AuthContext
  *
  * Changes:
- * - Replaced manual form state with Formik
- * - Replaced manual validation with Yup schema
- * - Enhanced phone sanitization (numbers only, exactly 10 digits)
- * - Preserved ALL existing UI/UX and functionality
+ * - Added useAuth hook import and destructuring
+ * - Replaced mock API call with real register function
+ * - Changed navigation from /verify-email to /dashboard on success
+ * - Added error handling with toast via AuthContext
+ * - REMOVED phone number formatting function (strict raw digits only)
+ * - Updated phone input to accept ONLY numeric digits (no spaces, parentheses, dashes)
+ * - Phone field now shows exactly the 10 digits with no visual formatting
+ * - Preserved ALL other existing UI/UX and functionality
  *
  * Connected Modules:
- * - AuthHeader.jsx (to be added)
+ * - AuthHeader.jsx
+ * - useAuth hook (from hooks/useAuth.js)
  * - App.jsx (route configuration)
  *
  * Dependencies:
@@ -42,6 +48,7 @@ import {
 import { NavLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import AuthHeader from '../components/Layout/AuthHeader';
+import { useAuth } from '../hooks/useAuth.js';
 
 // Validation Schema using Yup
 const RegistrationSchema = Yup.object().shape({
@@ -64,7 +71,7 @@ const RegistrationSchema = Yup.object().shape({
 
   phoneNumber: Yup.string()
     .required('Phone number is required')
-    .matches(/^\d{10}$/, 'Phone number must be exactly 10 digits')
+    .matches(/^\d{10}$/, 'Phone number must be exactly 10 digits (numbers only, no spaces or special characters)')
     .transform((value) => {
       // Remove all non-digits and take first 10 digits
       const digits = value.replace(/\D/g, '');
@@ -96,6 +103,7 @@ const RegistrationSchema = Yup.object().shape({
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { register } = useAuth(); // Get register function from auth context
 
   // Refs for focus management
   const fullNameRef = useRef(null);
@@ -112,6 +120,7 @@ const RegisterPage = () => {
   const [rateLimitTimer, setRateLimitTimer] = useState(null);
   const [registrationAttempts, setRegistrationAttempts] = useState(0);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [submitError, setSubmitError] = useState('');
 
   // Formik setup
   const formik = useFormik({
@@ -126,7 +135,7 @@ const RegisterPage = () => {
     validationSchema: RegistrationSchema,
     validateOnChange: true,
     validateOnBlur: true,
-    onSubmit: async (values, { setSubmitting, setErrors, resetForm }) => {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
       // Check rate limiting
       if (isRateLimited) {
         setSubmitError(
@@ -147,33 +156,27 @@ const RegisterPage = () => {
       }
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        // Prepare data for submission (remove confirmPassword)
+        // Prepare data for submission (remove confirmPassword and terms)
         const { confirmPassword, terms, ...submissionData } = values;
 
-        // Phone is already sanitized by Yup transform
-        console.log('Registration data ready for API:', submissionData);
+        // Call the register function from AuthContext
+        await register(submissionData);
 
         // Reset form sensitive data
         resetForm();
 
-        // Navigate to verification
-        navigate('/verify-email', {
-          state: { email: values.email },
-          replace: true,
-        });
+        // Navigate to dashboard on successful registration
+        navigate('/dashboard', { replace: true });
       } catch (error) {
         setRegistrationAttempts((prev) => prev + 1);
-        setSubmitError('Registration failed. Please try again.');
+        setSubmitError(
+          error.message || 'Registration failed. Please try again.'
+        );
       } finally {
         setSubmitting(false);
       }
     },
   });
-
-  const [submitError, setSubmitError] = useState('');
 
   // Focus first field on mount
   useEffect(() => {
@@ -225,34 +228,14 @@ const RegisterPage = () => {
     setPasswordStrength(calculatePasswordStrength(formik.values.password));
   }, [formik.values.password, calculatePasswordStrength]);
 
-  // Format phone number for display only
-  const formatPhoneForDisplay = useCallback((value) => {
-    if (!value) return '';
-    // Remove all non-digits
-    const digits = value.replace(/\D/g, '');
-    // Format as (XXX) XXX-XXXX
-    if (digits.length <= 3) {
-      return digits;
-    } else if (digits.length <= 6) {
-      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    } else {
-      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(
-        6,
-        10
-      )}`;
-    }
-  }, []);
-
-  // Handle phone change with formatting
+  // Handle phone change with strict numeric validation
   const handlePhoneChange = useCallback(
     (e) => {
       const rawValue = e.target.value;
-      // Remove all non-digits first
+      // Remove all non-digits, allow only numbers
       const digitsOnly = rawValue.replace(/\D/g, '');
       // Take only first 10 digits
       const truncatedDigits = digitsOnly.slice(0, 10);
-      // Format for display
-      const formatted = formatPhoneForDisplay(truncatedDigits);
 
       // Set the raw digits as the actual value (Yup will handle validation)
       formik.setFieldValue('phoneNumber', truncatedDigits);
@@ -526,10 +509,10 @@ const RegisterPage = () => {
                         type="tel"
                         id="phoneNumber"
                         name="phoneNumber"
-                        value={formatPhoneForDisplay(formik.values.phoneNumber)}
+                        value={formik.values.phoneNumber}
                         onChange={handlePhoneChange}
                         onBlur={formik.handleBlur}
-                        placeholder="(555) 555-5555"
+                        placeholder="1234567890"
                         className={inputClass()}
                         disabled={formik.isSubmitting || isRateLimited}
                         aria-invalid={
@@ -544,6 +527,8 @@ const RegisterPage = () => {
                         }
                         autoComplete="tel"
                         inputMode="numeric"
+                        pattern="\d*"
+                        maxLength={10}
                       />
                     </div>
 

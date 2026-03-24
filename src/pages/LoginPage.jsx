@@ -1,20 +1,23 @@
 /**
  * File: src/pages/LoginPage.jsx
- * Updated: 2026-03-17
+ * Updated: 2026-03-22
  *
  * Purpose:
  * - Enterprise-grade login screen with comprehensive validation
  * - Rate limiting simulation (5 attempts → 30s lockout)
  * - Remember me functionality
  * - Accessibility focused
+ * - Integrated with backend API via AuthContext
  *
  * Changes:
- * - Added AuthHeader component for consistent auth pages
- * - Added padding-top (80px) to account for fixed header
- * - Preserved ALL existing functionality and UI exactly as before
+ * - Added useAuth hook import and destructuring
+ * - Replaced mock API call with real login function
+ * - Added error handling with toast via AuthContext
+ * - Preserved ALL existing UI/UX and functionality
  *
  * Connected Modules:
  * - AuthHeader.jsx (for consistent auth page header)
+ * - useAuth hook (from hooks/useAuth.js)
  * - App.jsx (route configuration)
  *
  * Dependencies:
@@ -23,19 +26,15 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  FiAlertCircle,
-  FiEye,
-  FiEyeOff,
-  FiLock,
-  FiMail,
-} from 'react-icons/fi';
+import { FiAlertCircle, FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import AuthHeader from '../components/Layout/AuthHeader';
+import { useAuth } from '../hooks/useAuth.js';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth(); // Get login function from auth context
   const emailInputRef = useRef(null);
   const passwordInputRef = useRef(null);
   const submitButtonRef = useRef(null);
@@ -236,23 +235,8 @@ const LoginPage = () => {
         setSubmitError('');
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-
-          // Handle remember me
-          if (rememberMe) {
-            localStorage.setItem('savedEmail', formData.email);
-            localStorage.setItem('rememberMe', 'true');
-          } else {
-            localStorage.removeItem('savedEmail');
-            localStorage.removeItem('rememberMe');
-          }
-
-          // Clear sensitive data from memory
-          setFormData((prev) => ({
-            ...prev,
-            password: '',
-          }));
+          // Call the login function from AuthContext
+          await login(formData.email, formData.password, rememberMe);
 
           // Navigate to dashboard or redirect to requested page
           const from = location.state?.from?.pathname || '/dashboard';
@@ -260,7 +244,9 @@ const LoginPage = () => {
         } catch (error) {
           // Increment login attempts on failure
           setLoginAttempts((prev) => prev + 1);
-          setSubmitError('Invalid email or password. Please try again.');
+          setSubmitError(
+            error.message || 'Invalid email or password. Please try again.'
+          );
         } finally {
           setIsLoading(false);
         }
@@ -282,6 +268,7 @@ const LoginPage = () => {
       loginAttempts,
       isLocked,
       navigate,
+      login,
     ]
   );
 
@@ -565,7 +552,9 @@ const LoginPage = () => {
                   hover:text-indigo-700 focus:outline-none focus:ring-2 
                   focus:ring-indigo-500 focus:ring-offset-2 rounded
                   ${
-                    isLoading || isLocked ? 'pointer-events-none opacity-50' : ''
+                    isLoading || isLocked
+                      ? 'pointer-events-none opacity-50'
+                      : ''
                   }
                 `}
                   tabIndex={isLoading || isLocked ? -1 : 0}
